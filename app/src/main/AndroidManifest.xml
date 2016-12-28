@@ -17,7 +17,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RenderMessageActivity" />
         <activity android:name=".SessionActivity" />
         <activity android:name=".RegistrationActivity"></activity>
     </application>

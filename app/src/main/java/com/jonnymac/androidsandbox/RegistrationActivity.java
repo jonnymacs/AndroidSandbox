@@ -72,7 +72,7 @@ public class RegistrationActivity extends AppCompatActivity {
             super.onPostExecute(result);
 
             String message = new String();
-            message = "Invalid Entry";
+            message = "TODO Implement EULA for Android Reg";
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
             //TextView txt = (TextView) findViewById(R.id.output);
