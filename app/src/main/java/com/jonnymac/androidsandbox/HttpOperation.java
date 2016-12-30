@@ -34,32 +34,46 @@ public class HttpOperation extends AsyncTask<String, Void, String> {
         try {
             String method = params[0];
             URL url = new URL(params[1]);
-            String json = params[2];
-            int content_length = json.length();
+            String json_out = params[2];
+            int content_length = (method == "GET" ) ? 0 : json_out.length();
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
             String response = new String();
 
             try {
-                //urlConnection.setDoInput(true);
-                urlConnection.setDoOutput(true);
                 urlConnection.setRequestMethod(method);
                 urlConnection.setRequestProperty("Content-Length", Integer.toString(content_length));
-                urlConnection.setFixedLengthStreamingMode(content_length);
                 urlConnection.setRequestProperty("Content-Type", "application/json");
                 urlConnection.setRequestProperty("Accept", "application/json");
 
-                OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-                writeStream(out, json);
+                switch(method) {
+                    case "POST":
+                    case "PUT":
+                    case "PATCH":
+                        urlConnection.setDoOutput(true);
+                        urlConnection.setFixedLengthStreamingMode(content_length);
 
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                response = readStream(in);
+                        OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+                        writeStream(out, json_out);
+
+                        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                        response = readStream(in);
+                        break;
+                    case "GET":
+                        //TODO handle json responses
+                        urlConnection.connect();
+                        urlConnection.getResponseCode();
+                        break;
+                }
 
             } catch (IOException e) {
                 if (urlConnection.getResponseCode() == 401) {
                     response = null;
+                } else {
+                    throw new RuntimeException(e);
                 }
+
             } finally {
                 urlConnection.disconnect();
                 return response;
@@ -83,11 +97,12 @@ public class HttpOperation extends AsyncTask<String, Void, String> {
     protected void onProgressUpdate(Void... values) {
     }
 
-    private void writeStream(OutputStream os, String json) {
+    private void writeStream(OutputStream os, String json_out) {
         try {
-            os.write(json.getBytes("UTF-8"));
+            os.write(json_out.getBytes("UTF-8"));
             os.flush();
         } catch (IOException e) {
+            throw new RuntimeException(e);
             //Log.e(TAG, "IOException", e);
         }
     }
@@ -102,6 +117,7 @@ public class HttpOperation extends AsyncTask<String, Void, String> {
                 sb.append(line + "\n");
             }
         } catch (IOException e) {
+            throw new RuntimeException(e);
             //Log.e(TAG, "IOException", e);
         } finally {
             try {

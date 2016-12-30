@@ -2,12 +2,15 @@
     <string name="app_name">AndroidSandbox</string>
     <string name="welcome_message">Welcome To Jonny\'s Android Sandbox.  This page will be for some tantilizing marketing materials, and guest features of the app.  But, for now let\'s implement a login feature using leagueheads auth</string>
 
+    <string name="display_username">Welcome %1$S </string>
+
     <string name="user_name">Name</string>
     <string name="user_email">Email</string>
     <string name="user_password">Enter your password</string>
     <string name="user_password_confirmation">Re-enter your password</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_up">Sign Up</string>
+    <string name="sign_out">Sign Out</string>
 
     <string name="edit_message">Enter a Message</string>
     <string name="button_submit">Submit</string>

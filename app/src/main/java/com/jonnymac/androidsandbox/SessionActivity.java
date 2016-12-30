@@ -24,11 +24,24 @@ public class SessionActivity extends AppCompatActivity {
     private Button sign_up;
     private SharedPreferences mPreferences;
 
+    private Object user;
+    private Object session;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
-        setupVariables();
+        mPreferences = getSharedPreferences("CurrentUser", MODE_PRIVATE);
+
+        // If this activity is started and there is a sesssion,
+        // Kill the session and load the Main Page
+        //
+        if (mPreferences.contains("user")) {
+            setContentView(R.layout.activity_sign_out);
+            sign_out();
+        } else {
+            setContentView(R.layout.activity_sign_in);
+            setupVariables();
+        }
     }
 
     private void setupVariables() {
@@ -56,13 +69,13 @@ public class SessionActivity extends AppCompatActivity {
 
                 String json = new GsonBuilder().create().toJson(credentials, Map.class);
                 String url = "http://10.0.2.2:8080/sign_in";
-                new SessionHttpOperation().execute("POST", url, json);
+                new SessionHttpSignInOperation().execute("POST", url, json);
             }
         });
 
     }
 
-    private class SessionHttpOperation extends HttpOperation {
+    private class SessionHttpSignInOperation extends HttpOperation {
 
         @Override
         protected void onPostExecute(String result) {
@@ -75,12 +88,17 @@ public class SessionActivity extends AppCompatActivity {
             } else {
                 Gson gson = new Gson();
                 Map parsed_response = gson.fromJson(result, Map.class);
-                mPreferences = getApplicationContext().getSharedPreferences("CurrentUser", MODE_PRIVATE);
+                user = parsed_response.get("user");
+                session = parsed_response.get("session");
+
+                mPreferences = getSharedPreferences("CurrentUser", MODE_PRIVATE);
                 SharedPreferences.Editor editor = mPreferences.edit();
-                editor.putString("session", new GsonBuilder().create().toJson(parsed_response.get("session"), Map.class));
-                editor.commit();
+                editor.putString("user", new GsonBuilder().create().toJson(user, Map.class)).commit();
+                editor.putString("session", new GsonBuilder().create().toJson(session, Map.class)).commit();
+
                 message = "Sign In Successful";
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
                 finish();
             }
             //TextView txt = (TextView) findViewById(R.id.output);
@@ -90,6 +108,25 @@ public class SessionActivity extends AppCompatActivity {
             // our async task is completed! let's take care of this activity
         }
 
+    }
+
+    private void sign_out() {
+        String url = "http://10.0.2.2:8080/sign_out";
+        new SessionHttpSignOutOperation().execute("GET", url, null);
+    }
+
+    private class SessionHttpSignOutOperation extends HttpOperation {
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            SharedPreferences.Editor editor = mPreferences.edit();
+            editor.remove("user").commit();
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
 }
